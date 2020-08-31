@@ -1,0 +1,61 @@
+##bwa mem 
+-R "@RG\tID:Coad\tSMCoad\tLB:WXS\tPL:Illumina" /home/ubuntu/database/human/hg19/forGATK/genome.fa
+Breast_1.fastq  Breast_2.fastq > /home/ubuntu/boy/bwaresult/Breast.sam
+##
+
+
+##sort
+samtools view -bS Breast.sam > Breast.bam
+samtools sort Breast.bam -o Breast.sort.bam
+##
+
+##markduplicate
+gatk MarkDuplicates 
+-I  Breast.sort.bam
+-M  metrc.csv 
+-O  Breast.marked.bam
+##
+
+
+##BQSR
+gatk BaseRecalibrator  
+-I  Breast.marked.bam 
+--known-sites /home/ubuntu/database/human/hg19/forGATK/dbsnp_138.hg19.vcf
+-R /home/ubuntu/database/human/hg19/forGATK/genome.fa 
+-O Breastrecal_data.table 
+
+
+gatk GatherBQSRReports 
+-I Breastrecal_data.table 
+-O Breastrecal.table
+
+gatk ApplyBQSR  -R /home/ubuntu/database/human/hg19/forGATK/genome.fa 
+-I Breast.marked.bam  
+-O final_Breast.bam 
+-bqsr Breastrecal.table 
+--static-quantized-quals 10 
+--static-quantized-quals 20 
+--static-quantized-quals 30  
+--add-output-sam-program-record  
+--create-output-bam-md5  
+--use-original-qualities
+##
+
+
+##call somatic mutation
+gatk ApplyBQSR  -R /home/ubuntu/database/human/hg19/forGATK/genome.fa 
+-I Breast.marked.bam  
+-O final_Breast.bam 
+-bqsr Breastrecal.table 
+--static-quantized-quals 10 
+--static-quantized-quals 20 
+--static-quantized-quals 30  
+--add-output-sam-program-record  
+--create-output-bam-md5  
+--use-original-qualities
+
+
+gatk FilterMutectCalls 
+-R /home/ubuntu/database/human/hg19/forGATK/genome.fa 
+-V Breast_vsNormal.vcf
+-O Breast_vsNormal_somatic.vcf
