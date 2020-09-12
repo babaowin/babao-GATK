@@ -1,0 +1,23 @@
+#!/usr/bin/env nextflow
+params.bwa = "/home/ubuntu/miniconda3/envs/wes/bin/bwa"
+params.btindex = "/home/ubuntu/database/human/hg19/forGATK/genome.fa"
+params.fq1 = "Coad_1.fastq"
+params.fq2 = "Coad_2.fastq "
+index = file(params.btindex)
+
+process bwa {
+input:
+ file fq1 fq2
+ output:
+    file "bwa.bam" into bamfile
+    
+    script:
+    readGroup = "@RG\tID:Coad\tSMCoad\tLB:WXS\tPL:Illumina"
+    
+    """
+    ${params.bwa} -R ${readGroup} $index $input_fq -S out_1.sam 1> align.log 2>&1
+    samtools view -bS out_1.sam | samtools sort - -T /tmp/sortedS -o sorted.bam
+    """
+    
+}
+
