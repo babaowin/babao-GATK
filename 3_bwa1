@@ -1,0 +1,17 @@
+#!/usr/bin/env nextflow
+rocess bwatrying{
+
+input:
+set {readGroup} {genome.fa} {Coad_1.fastq}  {Coad_2.fastq}
+
+out put
+    set {Coad.sam}
+
+
+script:
+readGroup = "@RG\tID:Coad\tSMCoad\tLB:WXS\tPL:Illumina" 
+
+        """
+        bwa mem  -R "${readGroup} ${genome.fa} ${Coad_1.fastq}  ${Coad_2.fastq} > ${Coad.sam}
+        """
+}
