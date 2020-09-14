@@ -1,0 +1,24 @@
+#!/usr/bin/env nextflow
+  
+reads_ch = Channel.fromFilePairs('home/ubuntu/nextflow/forGATK*Coad_{1,2}.fq')
+
+ge_ch=Channel.fromFilePairs('home/ubuntu/nextflow/forGATK/genome.fa')
+
+process bwatrying{
+
+input:
+tuple  file(Coad_1.fastq)  file(Coad_2.fastq) from reads_ch
+tuple  file(genome.fa) from ge_ch
+
+out put:
+    tuple  file(Coad.sam) into bam_ch
+
+
+script:
+readGroup = "@RG\tID:Coad\tSMCoad\tLB:WXS\tPL:Illumina"
+
+        """
+        bwa mem  -R ${readGroup} ${genome.fa} ${Coad_1.fastq}  ${Coad_2.fastq} -> ${Coad.sam}
+        """
+        view Coad.sam
+}
